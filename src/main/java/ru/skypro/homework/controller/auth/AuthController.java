@@ -5,8 +5,10 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
 import ru.skypro.homework.dto.auth.Login;
 import ru.skypro.homework.dto.auth.Register;
 import ru.skypro.homework.service.AuthService;
@@ -32,25 +35,22 @@ public class AuthController {
 
     @Operation(
             summary = "Авторизация пользователя",
-            description = "Вход пользователя в систему с использованием логина и пароля"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Успешная авторизация",
-                    content = @Content
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Некорректные данные запроса (ошибка валидации)",
-                    content = @Content
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Неверные учетные данные (логин или пароль)",
-                    content = @Content
-            )
-    })
+            description = "Вход пользователя в систему с использованием логина и пароля")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "200",
+                        description = "Успешная авторизация",
+                        content = @Content),
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Некорректные данные запроса (ошибка валидации)",
+                        content = @Content),
+                @ApiResponse(
+                        responseCode = "401",
+                        description = "Неверные учетные данные (логин или пароль)",
+                        content = @Content)
+            })
     @PostMapping("/login")
     public ResponseEntity<Void> login(@Valid @RequestBody Login login) {
         log.info("Запрос на авторизацию пользователя: {}", login.getUsername());
@@ -66,24 +66,25 @@ public class AuthController {
 
     @Operation(
             summary = "Регистрация пользователя",
-            description = "Создание нового пользователя в системе"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "Пользователь успешно зарегистрирован",
-                    content = @Content
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Некорректные данные запроса (ошибка валидации или пользователь уже существует)",
-                    content = @Content
-            )
-    })
+            description = "Создание нового пользователя в системе")
+    @ApiResponses(
+            value = {
+                @ApiResponse(
+                        responseCode = "201",
+                        description = "Пользователь успешно зарегистрирован",
+                        content = @Content),
+                @ApiResponse(
+                        responseCode = "400",
+                        description =
+                                "Некорректные данные запроса (ошибка валидации или пользователь уже существует)",
+                        content = @Content)
+            })
     @PostMapping("/register")
     public ResponseEntity<Void> register(@Valid @RequestBody Register register) {
-        log.info("Запрос на регистрацию пользователя: {} {}",
-                register.getFirstName(), register.getLastName());
+        log.info(
+                "Запрос на регистрацию пользователя: {} {}",
+                register.getFirstName(),
+                register.getLastName());
 
         if (authService.register(register)) {
             log.info("Пользователь {} успешно зарегистрирован", register.getUsername());
