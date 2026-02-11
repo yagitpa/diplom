@@ -26,7 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.auth.Role;
 import ru.skypro.homework.dto.user.NewPassword;
 import ru.skypro.homework.dto.user.UpdateUser;
-import ru.skypro.homework.dto.user.User;
+import ru.skypro.homework.dto.user.UserDto;
 
 import javax.validation.Valid;
 
@@ -81,28 +81,28 @@ public class UserController {
                         content =
                                 @Content(
                                         mediaType = "application/json",
-                                        schema = @Schema(implementation = User.class))),
+                                        schema = @Schema(implementation = UserDto.class))),
                 @ApiResponse(
                         responseCode = "401",
                         description = "Пользователь не авторизован",
                         content = @Content(schema = @Schema(hidden = true)))
             })
     @GetMapping("/me")
-    public ResponseEntity<User> getUser(Authentication authentication) {
+    public ResponseEntity<UserDto> getUser(Authentication authentication) {
 
         log.info("Запрос информации о пользователе");
 
         // Заглушка - возвращаем DTO с дефолтными значениями
-        User user = new User();
-        user.setId(1);
-        user.setEmail("user@example.com");
-        user.setFirstName("Иван");
-        user.setLastName("Иванов");
-        user.setPhone("+7 (999) 123-45-67");
-        user.setRole(Role.USER);
-        user.setImage("/images/avatar.jpg");
+        UserDto userDto = new UserDto();
+        userDto.setId(1);
+        userDto.setEmail("userDto@example.com");
+        userDto.setFirstName("Иван");
+        userDto.setLastName("Иванов");
+        userDto.setPhone("+7 (999) 123-45-67");
+        userDto.setRole(Role.USER);
+        userDto.setImage("/images/avatar.jpg");
 
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(userDto);
     }
 
     @Operation(

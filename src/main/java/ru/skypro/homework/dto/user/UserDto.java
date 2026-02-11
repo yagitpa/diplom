@@ -8,7 +8,7 @@ import ru.skypro.homework.dto.auth.Role;
 
 @Data
 @Schema(description = "DTO для отображения информации о пользователе")
-public class User {
+public class UserDto {
 
     @Schema(description = "ID пользователя", example = "1")
     private Integer id;
