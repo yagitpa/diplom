@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import ru.skypro.homework.dto.comment.Comment;
+import ru.skypro.homework.dto.comment.CommentDto;
 import ru.skypro.homework.dto.comment.Comments;
 import ru.skypro.homework.dto.comment.CreateOrUpdateComment;
 
@@ -79,7 +79,7 @@ public class CommentController {
                         content =
                                 @Content(
                                         mediaType = "application/json",
-                                        schema = @Schema(implementation = Comment.class))),
+                                        schema = @Schema(implementation = CommentDto.class))),
                 @ApiResponse(
                         responseCode = "401",
                         description = "Пользователь не авторизован",
@@ -90,13 +90,13 @@ public class CommentController {
                         content = @Content)
             })
     @PostMapping("/{adId}/comments")
-    public ResponseEntity<Comment> addComment(
+    public ResponseEntity<CommentDto> addComment(
             @Parameter(description = "ID объявления") @PathVariable Integer adId,
             @Valid @RequestBody CreateOrUpdateComment createComment,
             Authentication authentication) {
         log.info("Запрос на добавление комментария к объявлению с ID: {}", adId);
         // Заглушка
-        Comment comment = new Comment();
+        CommentDto comment = new CommentDto();
         return ResponseEntity.ok(comment);
     }
 
@@ -140,7 +140,7 @@ public class CommentController {
                         content =
                                 @Content(
                                         mediaType = "application/json",
-                                        schema = @Schema(implementation = Comment.class))),
+                                        schema = @Schema(implementation = CommentDto.class))),
                 @ApiResponse(
                         responseCode = "401",
                         description = "Пользователь не авторизован",
@@ -155,14 +155,14 @@ public class CommentController {
                         content = @Content)
             })
     @PatchMapping("/{adId}/comments/{commentId}")
-    public ResponseEntity<Comment> updateComment(
+    public ResponseEntity<CommentDto> updateComment(
             @Parameter(description = "ID объявления") @PathVariable Integer adId,
             @Parameter(description = "ID комментария") @PathVariable Integer commentId,
             @Valid @RequestBody CreateOrUpdateComment updateComment,
             Authentication authentication) {
         log.info("Запрос на обновление комментария с ID {} в объявлении с ID: {}", commentId, adId);
         // Заглушка
-        Comment comment = new Comment();
+        CommentDto comment = new CommentDto();
         return ResponseEntity.ok(comment);
     }
 }
