@@ -1,45 +1,54 @@
 package ru.skypro.homework.service.impl;
 
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.stereotype.Service;
 import ru.skypro.homework.dto.auth.RegisterDto;
+import ru.skypro.homework.exception.UserAlreadyExistsException;
+import ru.skypro.homework.mapper.UserMapper;
+import ru.skypro.homework.model.UsersDao;
+import ru.skypro.homework.repository.UserRepository;
 import ru.skypro.homework.service.AuthService;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    private final UserDetailsManager manager;
-    private final PasswordEncoder encoder;
+    private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
-    public AuthServiceImpl(UserDetailsManager manager, PasswordEncoder passwordEncoder) {
-        this.manager = manager;
-        this.encoder = passwordEncoder;
+    @Override
+    public void login(String userName, String password) {
+        try {
+            Authentication auth = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(userName, password)
+            );
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            log.info("User {} successfully authenticated", userName);
+        } catch (BadCredentialsException e) {
+            log.warn("Failed login attempt for user: {}", userName);
+            throw e; // пробрасываем дальше
+        }
     }
 
     @Override
-    public boolean login(String userName, String password) {
-        if (!manager.userExists(userName)) {
-            return false;
+    public void register(RegisterDto registerDto) {
+        if (userRepository.existsByEmail(registerDto.getUsername())) {
+            log.warn("Registration failed: user {} already exists", registerDto.getUsername());
+            throw new UserAlreadyExistsException("User with email " + registerDto.getUsername() + " already exists");
         }
-        UserDetails userDetails = manager.loadUserByUsername(userName);
-        return encoder.matches(password, userDetails.getPassword());
-    }
-
-    @Override
-    public boolean register(RegisterDto registerDto) {
-        if (manager.userExists(registerDto.getUsername())) {
-            return false;
-        }
-        manager.createUser(
-                User.builder()
-                        .passwordEncoder(this.encoder::encode)
-                        .password(registerDto.getPassword())
-                        .username(registerDto.getUsername())
-                        .roles(registerDto.getRole().name())
-                        .build());
-        return true;
+        UsersDao user = userMapper.toUserEntity(registerDto);
+        user.setPassword(passwordEncoder.encode(registerDto.getPassword()));
+        userRepository.save(user);
+        log.info("User {} successfully registered", registerDto.getUsername());
     }
 }
