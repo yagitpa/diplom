@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import ru.skypro.homework.model.AdsDao;
 
+import java.util.List;
+
 @Repository
 public interface AdRepository extends JpaRepository<AdsDao, Integer> {
 
@@ -14,9 +16,17 @@ public interface AdRepository extends JpaRepository<AdsDao, Integer> {
      *
      * @param authorId идентификатор автора (поле user_id в таблице ads)
      * @param pageable параметры пагинации
-     * @return страница объявлений пользователя
+     * @return страница объявлений пользователя с пагинацией
      */
     Page<AdsDao> findByAuthorId(Integer authorId, Pageable pageable);
+
+    /**
+     * Получение объявлений конкретного пользователя (автора) без пагинации
+     *
+     * @param authorId идентификатор автора (поле user_id в таблице ads)
+     * @return страница объявлений пользователя без пагинации
+     */
+    List<AdsDao> findByAuthorId(Integer authorId);
 
     /**
      * Подсчёт количества объявлений пользователя.
