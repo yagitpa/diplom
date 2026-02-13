@@ -12,17 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.skypro.homework.dto.comment.CommentDto;
 import ru.skypro.homework.dto.comment.CommentsDto;
 import ru.skypro.homework.dto.comment.CreateOrUpdateCommentDto;
+import ru.skypro.homework.service.CommentService;
 
 import javax.validation.Valid;
 
@@ -34,132 +28,68 @@ import javax.validation.Valid;
 @Tag(name = "Комментарии", description = "API для работы с комментариями к объявлениям")
 public class CommentController {
 
-    @Operation(
-            summary = "Получение комментариев объявления",
-            description = "Возвращает список всех комментариев к указанному объявлению")
-    @ApiResponses(
-            value = {
-                @ApiResponse(
-                        responseCode = "200",
-                        description = "Комментарии получены",
-                        content =
-                                @Content(
-                                        mediaType = "application/json",
-                                        schema = @Schema(implementation = CommentsDto.class))),
-                @ApiResponse(
-                        responseCode = "401",
-                        description = "Пользователь не авторизован",
-                        content = @Content),
-                @ApiResponse(
-                        responseCode = "404",
-                        description = "Объявление не найдено",
-                        content = @Content)
-            })
+    private final CommentService commentService;
+
+    @Operation(summary = "Получение комментариев объявления")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Комментарии получены",
+                    content = @Content(schema = @Schema(implementation = CommentsDto.class))),
+            @ApiResponse(responseCode = "401", description = "Пользователь не авторизован"),
+            @ApiResponse(responseCode = "404", description = "Объявление не найдено")
+    })
     @GetMapping("/{adId}/comments")
-    public ResponseEntity<CommentsDto> getComments(
-            @Parameter(description = "ID объявления") @PathVariable Integer adId) {
-        log.info("Запрос комментариев для объявления с ID: {}", adId);
-        // Заглушка
-        CommentsDto commentsDto = new CommentsDto();
-        commentsDto.setCount(0);
-        return ResponseEntity.ok(commentsDto);
+    public ResponseEntity<CommentsDto> getComments(@PathVariable Integer adId) {
+        return ResponseEntity.ok(commentService.getComments(adId));
     }
 
-    @Operation(
-            summary = "Добавление комментария к объявлению",
-            description = "Создает новый комментарий к указанному объявлению")
-    @ApiResponses(
-            value = {
-                @ApiResponse(
-                        responseCode = "200",
-                        description = "Комментарий создан",
-                        content =
-                                @Content(
-                                        mediaType = "application/json",
-                                        schema = @Schema(implementation = CommentDto.class))),
-                @ApiResponse(
-                        responseCode = "401",
-                        description = "Пользователь не авторизован",
-                        content = @Content),
-                @ApiResponse(
-                        responseCode = "404",
-                        description = "Объявление не найдено",
-                        content = @Content)
-            })
+    @Operation(summary = "Добавление комментария к объявлению")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Комментарий создан",
+                    content = @Content(schema = @Schema(implementation = CommentDto.class))),
+            @ApiResponse(responseCode = "401", description = "Пользователь не авторизован"),
+            @ApiResponse(responseCode = "404", description = "Объявление не найдено")
+    })
     @PostMapping("/{adId}/comments")
     public ResponseEntity<CommentDto> addComment(
-            @Parameter(description = "ID объявления") @PathVariable Integer adId,
+            @PathVariable Integer adId,
             @Valid @RequestBody CreateOrUpdateCommentDto createComment,
             Authentication authentication) {
-        log.info("Запрос на добавление комментария к объявлению с ID: {}", adId);
-        // Заглушка
-        CommentDto comment = new CommentDto();
-        return ResponseEntity.ok(comment);
+        String email = authentication.getName();
+        return ResponseEntity.ok(commentService.addComment(adId, email, createComment));
     }
 
-    @Operation(
-            summary = "Удаление комментария",
-            description = "Удаляет комментарий по ID объявления и ID комментария")
-    @ApiResponses(
-            value = {
-                @ApiResponse(
-                        responseCode = "200",
-                        description = "Комментарий удален",
-                        content = @Content),
-                @ApiResponse(
-                        responseCode = "401",
-                        description = "Пользователь не авторизован",
-                        content = @Content),
-                @ApiResponse(
-                        responseCode = "403",
-                        description = "Доступ запрещен",
-                        content = @Content),
-                @ApiResponse(
-                        responseCode = "404",
-                        description = "Комментарий или объявление не найдены",
-                        content = @Content)
-            })
+    @Operation(summary = "Удаление комментария")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Комментарий удален"),
+            @ApiResponse(responseCode = "401", description = "Пользователь не авторизован"),
+            @ApiResponse(responseCode = "403", description = "Доступ запрещен"),
+            @ApiResponse(responseCode = "404", description = "Комментарий или объявление не найдены")
+    })
     @DeleteMapping("/{adId}/comments/{commentId}")
     public ResponseEntity<Void> deleteComment(
-            @Parameter(description = "ID объявления") @PathVariable Integer adId,
-            @Parameter(description = "ID комментария") @PathVariable Integer commentId,
+            @PathVariable Integer adId,
+            @PathVariable Integer commentId,
             Authentication authentication) {
-        log.info("Запрос на удаление комментария с ID {} из объявления с ID: {}", commentId, adId);
+        String email = authentication.getName();
+        commentService.deleteComment(adId, commentId, email);
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "Обновление комментария", description = "Обновляет текст комментария")
-    @ApiResponses(
-            value = {
-                @ApiResponse(
-                        responseCode = "200",
-                        description = "Комментарий обновлен",
-                        content =
-                                @Content(
-                                        mediaType = "application/json",
-                                        schema = @Schema(implementation = CommentDto.class))),
-                @ApiResponse(
-                        responseCode = "401",
-                        description = "Пользователь не авторизован",
-                        content = @Content),
-                @ApiResponse(
-                        responseCode = "403",
-                        description = "Доступ запрещен",
-                        content = @Content),
-                @ApiResponse(
-                        responseCode = "404",
-                        description = "Комментарий или объявление не найдены",
-                        content = @Content)
-            })
+    @Operation(summary = "Обновление комментария")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Комментарий обновлен",
+                    content = @Content(schema = @Schema(implementation = CommentDto.class))),
+            @ApiResponse(responseCode = "401", description = "Пользователь не авторизован"),
+            @ApiResponse(responseCode = "403", description = "Доступ запрещен"),
+            @ApiResponse(responseCode = "404", description = "Комментарий или объявление не найдены")
+    })
     @PatchMapping("/{adId}/comments/{commentId}")
     public ResponseEntity<CommentDto> updateComment(
-            @Parameter(description = "ID объявления") @PathVariable Integer adId,
-            @Parameter(description = "ID комментария") @PathVariable Integer commentId,
+            @PathVariable Integer adId,
+            @PathVariable Integer commentId,
             @Valid @RequestBody CreateOrUpdateCommentDto updateComment,
             Authentication authentication) {
-        log.info("Запрос на обновление комментария с ID {} в объявлении с ID: {}", commentId, adId);
-        // Заглушка
-        CommentDto comment = new CommentDto();
-        return ResponseEntity.ok(comment);
+        String email = authentication.getName();
+        return ResponseEntity.ok(commentService.updateComment(adId, commentId, email, updateComment));
     }
 }

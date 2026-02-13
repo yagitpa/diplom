@@ -1,7 +1,6 @@
 package ru.skypro.homework.controller.ad;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -29,6 +28,7 @@ import ru.skypro.homework.dto.ad.AdDto;
 import ru.skypro.homework.dto.ad.AdsDto;
 import ru.skypro.homework.dto.ad.CreateOrUpdateAdDto;
 import ru.skypro.homework.dto.ad.ExtendedAdDto;
+import ru.skypro.homework.service.AdService;
 
 import javax.validation.Valid;
 
@@ -40,204 +40,103 @@ import javax.validation.Valid;
 @Tag(name = "Объявления", description = "API для работы с объявлениями")
 public class AdController {
 
-    @Operation(
-            summary = "Получение всех объявлений",
-            description = "Возвращает список всех объявлений")
-    @ApiResponses(
-            value = {
-                @ApiResponse(
-                        responseCode = "200",
-                        description = "Список объявлений получен",
-                        content =
-                                @Content(
-                                        mediaType = "application/json",
-                                        schema = @Schema(implementation = AdsDto.class)))
-            })
+    private final AdService adService;
+
+    @Operation(summary = "Получение всех объявлений")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Список объявлений получен",
+                    content = @Content(schema = @Schema(implementation = AdsDto.class)))
+    })
     @GetMapping
     public ResponseEntity<AdsDto> getAllAds() {
-        log.info("Запрос на получение всех объявлений");
-        // Заглушка
-        AdsDto adsDto = new AdsDto();
-        adsDto.setCount(0);
-        return ResponseEntity.ok(adsDto);
+        return ResponseEntity.ok(adService.getAllAds());
     }
 
-    @Operation(
-            summary = "Добавление объявления",
-            description = "Создание нового объявления с изображением")
-    @ApiResponses(
-            value = {
-                @ApiResponse(
-                        responseCode = "201",
-                        description = "Объявление создано",
-                        content =
-                                @Content(
-                                        mediaType = "application/json",
-                                        schema = @Schema(implementation = AdDto.class))),
-                @ApiResponse(
-                        responseCode = "401",
-                        description = "Пользователь не авторизован",
-                        content = @Content)
-            })
+    @Operation(summary = "Добавление объявления")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Объявление создано",
+                    content = @Content(schema = @Schema(implementation = AdDto.class))),
+            @ApiResponse(responseCode = "401", description = "Пользователь не авторизован")
+    })
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AdDto> addAd(
             @RequestPart("properties") @Valid CreateOrUpdateAdDto properties,
             @RequestPart("image") MultipartFile image,
             Authentication authentication) {
-        log.info("Запрос на создание объявления");
-        // Заглушка
-        AdDto ad = new AdDto();
-        return ResponseEntity.status(HttpStatus.CREATED).body(ad);
+        String email = authentication.getName();
+        AdDto createdAd = adService.addAd(email, properties, image);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdAd);
     }
 
-    @Operation(
-            summary = "Получение информации об объявлении",
-            description = "Возвращает расширенную информацию об объявлении")
-    @ApiResponses(
-            value = {
-                @ApiResponse(
-                        responseCode = "200",
-                        description = "Информация об объявлении получена",
-                        content =
-                                @Content(
-                                        mediaType = "application/json",
-                                        schema = @Schema(implementation = ExtendedAdDto.class))),
-                @ApiResponse(
-                        responseCode = "401",
-                        description = "Пользователь не авторизован",
-                        content = @Content),
-                @ApiResponse(
-                        responseCode = "404",
-                        description = "Объявление не найдено",
-                        content = @Content)
-            })
+    @Operation(summary = "Получение информации об объявлении")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Информация получена",
+                    content = @Content(schema = @Schema(implementation = ExtendedAdDto.class))),
+            @ApiResponse(responseCode = "401", description = "Пользователь не авторизован"),
+            @ApiResponse(responseCode = "404", description = "Объявление не найдено")
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<ExtendedAdDto> getAd(
-            @Parameter(description = "ID объявления") @PathVariable Integer id) {
-        log.info("Запрос информации об объявлении с ID: {}", id);
-        // Заглушка
-        ExtendedAdDto extendedAdDto = new ExtendedAdDto();
-        return ResponseEntity.ok(extendedAdDto);
+    public ResponseEntity<ExtendedAdDto> getAd(@PathVariable Integer id) {
+        return ResponseEntity.ok(adService.getAd(id));
     }
 
-    @Operation(summary = "Удаление объявления", description = "Удаляет объявление по ID")
-    @ApiResponses(
-            value = {
-                @ApiResponse(
-                        responseCode = "204",
-                        description = "Объявление удалено",
-                        content = @Content),
-                @ApiResponse(
-                        responseCode = "401",
-                        description = "Пользователь не авторизован",
-                        content = @Content),
-                @ApiResponse(
-                        responseCode = "403",
-                        description = "Доступ запрещен",
-                        content = @Content),
-                @ApiResponse(
-                        responseCode = "404",
-                        description = "Объявление не найдено",
-                        content = @Content)
-            })
+    @Operation(summary = "Удаление объявления")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Объявление удалено"),
+            @ApiResponse(responseCode = "401", description = "Пользователь не авторизован"),
+            @ApiResponse(responseCode = "403", description = "Доступ запрещен"),
+            @ApiResponse(responseCode = "404", description = "Объявление не найдено")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> removeAd(
-            @Parameter(description = "ID объявления") @PathVariable Integer id,
-            Authentication authentication) {
-        log.info("Запрос на удаление объявления с ID: {}", id);
+    public ResponseEntity<Void> removeAd(@PathVariable Integer id, Authentication authentication) {
+        String email = authentication.getName();
+        adService.removeAd(id, email);
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            summary = "Обновление информации об объявлении",
-            description = "Обновляет данные объявления")
-    @ApiResponses(
-            value = {
-                @ApiResponse(
-                        responseCode = "200",
-                        description = "Объявление обновлено",
-                        content =
-                                @Content(
-                                        mediaType = "application/json",
-                                        schema = @Schema(implementation = AdDto.class))),
-                @ApiResponse(
-                        responseCode = "401",
-                        description = "Пользователь не авторизован",
-                        content = @Content),
-                @ApiResponse(
-                        responseCode = "403",
-                        description = "Доступ запрещен",
-                        content = @Content),
-                @ApiResponse(
-                        responseCode = "404",
-                        description = "Объявление не найдено",
-                        content = @Content)
-            })
+    @Operation(summary = "Обновление информации об объявлении")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Объявление обновлено",
+                    content = @Content(schema = @Schema(implementation = AdDto.class))),
+            @ApiResponse(responseCode = "401", description = "Пользователь не авторизован"),
+            @ApiResponse(responseCode = "403", description = "Доступ запрещен"),
+            @ApiResponse(responseCode = "404", description = "Объявление не найдено")
+    })
     @PatchMapping("/{id}")
     public ResponseEntity<AdDto> updateAd(
-            @Parameter(description = "ID объявления") @PathVariable Integer id,
+            @PathVariable Integer id,
             @Valid @RequestBody CreateOrUpdateAdDto updateAd,
             Authentication authentication) {
-        log.info("Запрос на обновление объявления с ID: {}", id);
-        // Заглушка
-        AdDto ad = new AdDto();
-        return ResponseEntity.ok(ad);
+        String email = authentication.getName();
+        return ResponseEntity.ok(adService.updateAd(id, email, updateAd));
     }
 
-    @Operation(
-            summary = "Получение объявлений авторизованного пользователя",
-            description = "Возвращает список объявлений текущего пользователя")
-    @ApiResponses(
-            value = {
-                @ApiResponse(
-                        responseCode = "200",
-                        description = "Список объявлений получен",
-                        content =
-                                @Content(
-                                        mediaType = "application/json",
-                                        schema = @Schema(implementation = AdsDto.class))),
-                @ApiResponse(
-                        responseCode = "401",
-                        description = "Пользователь не авторизован",
-                        content = @Content)
-            })
+    @Operation(summary = "Получение объявлений авторизованного пользователя")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Список объявлений получен",
+                    content = @Content(schema = @Schema(implementation = AdsDto.class))),
+            @ApiResponse(responseCode = "401", description = "Пользователь не авторизован")
+    })
     @GetMapping("/me")
     public ResponseEntity<AdsDto> getAdsMe(Authentication authentication) {
-        log.info("Запрос на получение объявлений текущего пользователя");
-        // Заглушка
-        AdsDto adsDto = new AdsDto();
-        adsDto.setCount(0);
-        return ResponseEntity.ok(adsDto);
+        String email = authentication.getName();
+        return ResponseEntity.ok(adService.getAdsMe(email));
     }
 
-    @Operation(
-            summary = "Обновление картинки объявления",
-            description = "Загружает новое изображение для объявления")
-    @ApiResponses(
-            value = {
-                @ApiResponse(
-                        responseCode = "200",
-                        description = "Изображение обновлено",
-                        content = @Content),
-                @ApiResponse(
-                        responseCode = "401",
-                        description = "Пользователь не авторизован",
-                        content = @Content),
-                @ApiResponse(
-                        responseCode = "403",
-                        description = "Доступ запрещен",
-                        content = @Content),
-                @ApiResponse(
-                        responseCode = "404",
-                        description = "Объявление не найдено",
-                        content = @Content)
-            })
+    @Operation(summary = "Обновление картинки объявления")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Изображение обновлено"),
+            @ApiResponse(responseCode = "401", description = "Пользователь не авторизован"),
+            @ApiResponse(responseCode = "403", description = "Доступ запрещен"),
+            @ApiResponse(responseCode = "404", description = "Объявление не найдено")
+    })
     @PatchMapping(value = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<byte[]> updateImage(
-            @Parameter(description = "ID объявления") @PathVariable Integer id,
+            @PathVariable Integer id,
             @RequestParam("image") MultipartFile image,
             Authentication authentication) {
-        log.info("Запрос на обновление изображения объявления с ID: {}", id);
-        return ResponseEntity.ok().build();
+        String email = authentication.getName();
+        byte[] updatedImage = adService.updateImage(id, email, image);
+        return ResponseEntity.ok(updatedImage);
     }
 }
