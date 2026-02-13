@@ -11,14 +11,14 @@ import javax.validation.constraints.Size;
 @Schema(description = "DTO для обновления информации о пользователе")
 public class UpdateUserDto {
 
-    @Schema(description = "Имя пользователя", minLength = 3, maxLength = 10, example = "Иван")
+    @Schema(description = "Имя пользователя", minLength = 2, maxLength = 16, example = "Иван")
     @NotBlank(message = "Имя не может быть пустым")
-    @Size(min = 3, max = 10, message = "Имя должно быть от 3 до 10 символов")
+    @Size(min = 2, max = 16, message = "Имя должно быть от 2 до 16 символов")
     private String firstName;
 
-    @Schema(description = "Фамилия пользователя", minLength = 3, maxLength = 10, example = "Иванов")
+    @Schema(description = "Фамилия пользователя", minLength = 2, maxLength = 16, example = "Иванов")
     @NotBlank(message = "Фамилия не может быть пустой")
-    @Size(min = 3, max = 10, message = "Фамилия должна быть от 3 до 10 символов")
+    @Size(min = 2, max = 16, message = "Фамилия должна быть от 2 до 16 символов")
     private String lastName;
 
     @Schema(

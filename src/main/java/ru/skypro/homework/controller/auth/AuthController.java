@@ -48,7 +48,7 @@ public class AuthController {
                         description = "Неверные учетные данные (логин или пароль)",
                         content = @Content)
             })
-    @PostMapping("/loginDto")
+    @PostMapping("/login")
     public ResponseEntity<Void> login(@Valid @RequestBody LoginDto loginDto) {
         log.info("Запрос на авторизацию пользователя: {}", loginDto.getUsername());
 
@@ -76,7 +76,7 @@ public class AuthController {
                                 "Некорректные данные запроса (ошибка валидации или пользователь уже существует)",
                         content = @Content)
             })
-    @PostMapping("/registerDto")
+    @PostMapping("/register")
     public ResponseEntity<Void> register(@Valid @RequestBody RegisterDto registerDto) {
         log.info(
                 "Запрос на регистрацию пользователя: {} {}",
