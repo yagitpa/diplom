@@ -27,17 +27,16 @@ public interface CommentMapper {
     @Mapping(target = "pk", ignore = true)
     @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "author", ignore = true)
-    @Mapping(target = "ad", ignore = true)
+    @Mapping(target = "adsDao", ignore = true)
     CommentsDao toCommentEntity(CreateOrUpdateCommentDto dto);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "pk", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "author", ignore = true)
-    @Mapping(target = "ad", ignore = true)
+    @Mapping(target = "adsDao", ignore = true)
     void updateCommentFromDto(CreateOrUpdateCommentDto dto, @MappingTarget CommentsDao entity);
 
-    // ========== Вспомогательный метод: LocalDateTime → Long (epoch millis) ==========
     @Named("localDateTimeToEpochMillis")
     default Long localDateTimeToEpochMillis(LocalDateTime dateTime) {
         if (dateTime == null) return null;
