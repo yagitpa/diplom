@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import ru.skypro.homework.dto.auth.Role;
 
+import static ru.skypro.homework.constants.ValidationConstants.PHONE_EXAMPLE;
+
 @Data
 @Schema(description = "DTO для отображения информации о пользователе")
 public class UserDto {
@@ -20,13 +22,11 @@ public class UserDto {
     @Schema(description = "Фамилия пользователя", example = "Иванов")
     private String lastName;
 
-    @Schema(description = "Телефон пользователя", example = "+7 (999) 123-45-67")
+    @Schema(description = "Телефон пользователя", example = PHONE_EXAMPLE)
     private String phone;
 
     @Schema(
-            description = "Роль пользователя",
-            allowableValues = {"USER", "ADMIN"},
-            example = "USER")
+            description = "Роль пользователя", allowableValues = {"USER", "ADMIN"}, example = "USER")
     private Role role;
 
     @Schema(

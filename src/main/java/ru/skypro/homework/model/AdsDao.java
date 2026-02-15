@@ -49,6 +49,6 @@ public class AdsDao {
     @JoinColumn(name = "user_id", nullable = false)
     private UsersDao author;
 
-    @OneToMany(mappedBy = "adsDao", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "ad", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CommentsDao> commentsDaos = new ArrayList<>();
 }
