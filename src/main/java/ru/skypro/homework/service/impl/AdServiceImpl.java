@@ -20,6 +20,8 @@ import ru.skypro.homework.model.UsersDao;
 import ru.skypro.homework.repository.AdRepository;
 import ru.skypro.homework.repository.UserRepository;
 import ru.skypro.homework.service.AdService;
+import ru.skypro.homework.service.CurrentUserService;
+import ru.skypro.homework.service.ImageService;
 import ru.skypro.homework.util.ImageHelper;
 
 import java.io.IOException;
@@ -37,8 +39,10 @@ import java.util.stream.Collectors;
 public class AdServiceImpl implements AdService {
 
     private final AdRepository adRepository;
-    private final UserRepository userRepository;
     private final AdMapper adMapper;
+
+    private final CurrentUserService currentUserService;
+    private final ImageService imageService;
 
     @Value("${app.image.ad-dir}")
     private String adImageDir;
@@ -58,8 +62,8 @@ public class AdServiceImpl implements AdService {
 
     @Override
     public AdDto addAd(String email, CreateOrUpdateAdDto properties, MultipartFile image) {
-        UsersDao author = getUserByEmail(email);
-        String imagePath = saveImage(image);
+        UsersDao author = currentUserService.getUserByEmail(email);
+        String imagePath = imageService.saveImage(image, adImageDir, "/ads-images/");
 
         AdsDao ad = adMapper.toAdEntity(properties);
         ad.setAuthor(author);
@@ -83,7 +87,7 @@ public class AdServiceImpl implements AdService {
         checkPermissions(ad, email);
 
         if (ad.getImage() != null) {
-            deleteImageFile(ad.getImage());
+            imageService.deleteImage(ad.getImage(), adImageDir);
         }
         adRepository.delete(ad);
         log.info("Ad deleted with id: {} by user: {}", id, email);
@@ -102,7 +106,7 @@ public class AdServiceImpl implements AdService {
     @Override
     @Transactional(readOnly = true)
     public AdsDto getAdsMe(String email) {
-        UsersDao author = getUserByEmail(email);
+        UsersDao author = currentUserService.getUserByEmail(email);
         List<AdsDao> ads = adRepository.findByAuthorId(author.getId());
         List<AdDto> adDtos = ads.stream()
                                 .map(adMapper::toAdDto)
@@ -118,28 +122,16 @@ public class AdServiceImpl implements AdService {
         AdsDao ad = getAdById(id);
         checkPermissions(ad, email);
 
-        String newImagePath = saveImage(image);
+        String newImagePath = imageService.saveImage(image, adImageDir, "/ads-images/");
         if (ad.getImage() != null) {
-            deleteImageFile(ad.getImage());
+            imageService.deleteImage(ad.getImage(), adImageDir);
         }
 
         ad.setImage(newImagePath);
         adRepository.save(ad);
         log.info("Image updated for ad id: {} by user: {}", id, email);
 
-        // Возвращаем массив байт нового изображения
-        try {
-            Path path = Paths.get(newImagePath);
-            return Files.readAllBytes(path);
-        } catch (IOException e) {
-            log.error("Failed to read saved image file: {}", newImagePath, e);
-            throw new RuntimeException("Failed to read image file", e);
-        }
-    }
-
-    private UsersDao getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                             .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+        return imageService.readImageAsBytes(newImagePath, adImageDir);
     }
 
     private AdsDao getAdById(Integer id) {
@@ -148,38 +140,11 @@ public class AdServiceImpl implements AdService {
     }
 
     private void checkPermissions(AdsDao ad, String email) {
-        UsersDao user = getUserByEmail(email);
+        UsersDao user = currentUserService.getUserByEmail(email);
         boolean isAuthor = ad.getAuthor().getId().equals(user.getId());
         boolean isAdmin = user.getRole() == Role.ADMIN;
         if (!isAuthor && !isAdmin) {
             throw new UnauthorizedAccessException("User does not have permission to modify this ad");
-        }
-    }
-
-    private String saveImage(MultipartFile image) {
-        try {
-            String extension = ImageHelper.getExtension(image.getOriginalFilename());
-            String filename = UUID.randomUUID() + extension;
-            Path uploadPath = Paths.get(adImageDir);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-            Path filePath = uploadPath.resolve(filename);
-            image.transferTo(filePath.toFile());
-            // Возвращаем относительный
-            return "/ads-images/" + filename;
-        } catch (IOException e) {
-            log.error("Failed to save ad image", e);
-            throw new RuntimeException("Failed to save image", e);
-        }
-    }
-
-    private void deleteImageFile(String imagePath) {
-        try {
-            Path fullPath = Paths.get(adImageDir, Paths.get(imagePath).getFileName().toString());
-            Files.deleteIfExists(fullPath);
-        } catch (IOException e) {
-            log.warn("Failed to delete old image file: {}", imagePath, e);
         }
     }
 }

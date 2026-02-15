@@ -10,16 +10,13 @@ public class AdDto {
     @Schema(description = "ID автора объявления", example = "1")
     private Integer author;
 
-    @Schema(
-            description = "Ссылка на картинку объявления",
-            example = "/images/ads/1/image.jpg",
-            nullable = true)
+    @Schema(description = "Ссылка на картинку объявления", example = "/ads-images/image.jpg", nullable = true)
     private String image;
 
     @Schema(description = "ID объявления", example = "1")
     private Integer pk;
 
-    @Schema(description = "Цена объявления", example = "15000", minimum = "0", maximum = "10000000")
+    @Schema(description = "Цена объявления")
     private Integer price;
 
     @Schema(description = "Заголовок объявления", example = "Продам ноутбук")

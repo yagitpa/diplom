@@ -27,14 +27,14 @@ public interface CommentMapper {
     @Mapping(target = "pk", ignore = true)
     @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "author", ignore = true)
-    @Mapping(target = "adsDao", ignore = true)
+    @Mapping(target = "ad", ignore = true)
     CommentsDao toCommentEntity(CreateOrUpdateCommentDto dto);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "pk", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "author", ignore = true)
-    @Mapping(target = "adsDao", ignore = true)
+    @Mapping(target = "ad", ignore = true)
     void updateCommentFromDto(CreateOrUpdateCommentDto dto, @MappingTarget CommentsDao entity);
 
     @Named("localDateTimeToEpochMillis")

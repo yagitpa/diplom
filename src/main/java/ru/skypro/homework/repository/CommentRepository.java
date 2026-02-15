@@ -26,20 +26,20 @@ public interface CommentRepository extends JpaRepository<CommentsDao, Integer> {
     /**
      * Поиск комментария по его идентификатору и идентификатору объявления.
      *
-     * @param id   идентификатор комментария (comment.pk)
+     * @param pk   идентификатор комментария (comment.pk)
      * @param adPk идентификатор объявления (ad.pk)
      * @return Optional с комментарием или пустой Optional
      */
-    Optional<CommentsDao> findByIdAndAdPk(Integer id, Integer adPk);
+    Optional<CommentsDao> findByPkAndAdPk(Integer pk, Integer adPk);
 
     /**
      * Поиск комментария по его идентификатору и идентификатору автора.
      *
-     * @param id       идентификатор комментария (comment.pk)
+     * @param pk      идентификатор комментария (comment.pk)
      * @param authorId идентификатор автора (author.id)
      * @return Optional с комментарием или пустой Optional
      */
-    Optional<CommentsDao> findByIdAndAuthorId(Integer id, Integer authorId);
+    Optional<CommentsDao> findByPkAndAuthorId(Integer pk, Integer authorId);
 
     // ---------- Методы с пагинацией ----------
 

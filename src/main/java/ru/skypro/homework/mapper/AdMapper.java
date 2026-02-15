@@ -26,13 +26,13 @@ public interface AdMapper {
     @Mapping(target = "pk", ignore = true)
     @Mapping(target = "image", ignore = true)
     @Mapping(target = "author", ignore = true)
-    @Mapping(target = "comments", ignore = true)
+    @Mapping(target = "commentsDaos", ignore = true)
     AdsDao toAdEntity(CreateOrUpdateAdDto dto);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "pk", ignore = true)
     @Mapping(target = "image", ignore = true)
     @Mapping(target = "author", ignore = true)
-    @Mapping(target = "comments", ignore = true)
+    @Mapping(target = "commentsDaos", ignore = true)
     void updateAdFromDto(CreateOrUpdateAdDto dto, @MappingTarget AdsDao entity);
 }

@@ -11,15 +11,14 @@ import ru.skypro.homework.dto.comment.CreateOrUpdateCommentDto;
 import ru.skypro.homework.exception.AdNotFoundException;
 import ru.skypro.homework.exception.CommentNotFoundException;
 import ru.skypro.homework.exception.UnauthorizedAccessException;
-import ru.skypro.homework.exception.UserNotFoundException;
 import ru.skypro.homework.mapper.CommentMapper;
 import ru.skypro.homework.model.AdsDao;
 import ru.skypro.homework.model.CommentsDao;
 import ru.skypro.homework.model.UsersDao;
 import ru.skypro.homework.repository.AdRepository;
 import ru.skypro.homework.repository.CommentRepository;
-import ru.skypro.homework.repository.UserRepository;
 import ru.skypro.homework.service.CommentService;
+import ru.skypro.homework.service.CurrentUserService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,8 +31,9 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
     private final AdRepository adRepository;
-    private final UserRepository userRepository;
     private final CommentMapper commentMapper;
+
+    private final CurrentUserService currentUserService;
 
     @Override
     @Transactional(readOnly = true)
@@ -53,12 +53,12 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDto addComment(Integer adId, String email, CreateOrUpdateCommentDto createComment) {
-        UsersDao author = getUserByEmail(email);
+        UsersDao author = currentUserService.getUserByEmail(email);
         AdsDao ad = getAdById(adId);
 
         CommentsDao comment = commentMapper.toCommentEntity(createComment);
         comment.setAuthor(author);
-        comment.setAdsDao(ad);
+        comment.setAd(ad);
         CommentsDao savedComment = commentRepository.save(comment);
 
         log.info("Comment added with id: {} to ad: {} by user: {}", savedComment.getPk(), adId, email);
@@ -83,24 +83,19 @@ public class CommentServiceImpl implements CommentService {
         return commentMapper.toCommentDto(updatedComment);
     }
 
-    private UsersDao getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                             .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
-    }
-
     private AdsDao getAdById(Integer adId) {
         return adRepository.findById(adId)
                            .orElseThrow(() -> new AdNotFoundException("Ad not found with id: " + adId));
     }
 
     private CommentsDao getCommentByIdAndAdId(Integer commentId, Integer adId) {
-        return commentRepository.findByIdAndAdPk(commentId, adId)
+        return commentRepository.findByPkAndAdPk(commentId, adId)
                                 .orElseThrow(() -> new CommentNotFoundException(
                                         String.format("Comment with id %d not found for ad id %d", commentId, adId)));
     }
 
     private void checkPermissions(CommentsDao comment, String email) {
-        UsersDao user = getUserByEmail(email);
+        UsersDao user = currentUserService.getUserByEmail(email);
         boolean isAuthor = comment.getAuthor().getId().equals(user.getId());
         boolean isAdmin = user.getRole() == Role.ADMIN;
         if (!isAuthor && !isAdmin) {

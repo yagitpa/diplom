@@ -19,8 +19,8 @@ public interface UserMapper {
     @Mapping(source = "username", target = "email")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "image", ignore = true)
-    @Mapping(target = "ads", ignore = true)
-    @Mapping(target = "comments", ignore = true)
+    @Mapping(target = "adsDaos", ignore = true)
+    @Mapping(target = "commentsDaos", ignore = true)
     UsersDao toUserEntity(RegisterDto registerDto);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

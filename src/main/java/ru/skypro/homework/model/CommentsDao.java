@@ -39,5 +39,5 @@ public class CommentsDao {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ad_id", nullable = false)
-    private AdsDao adsDao;
+    private AdsDao ad;
 }
