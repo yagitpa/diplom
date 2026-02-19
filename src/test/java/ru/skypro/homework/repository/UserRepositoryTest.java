@@ -2,7 +2,8 @@ package ru.skypro.homework.repository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.transaction.annotation.Transactional;
+import ru.skypro.homework.AbstractIntegrationTest;
 import ru.skypro.homework.dto.auth.Role;
 import ru.skypro.homework.model.UsersDao;
 
@@ -10,13 +11,11 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Transactional
 class UserRepositoryTest extends AbstractIntegrationTest {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private TestEntityManager entityManager;
 
     @Test
     void saveUser_ShouldPersistUser() {
@@ -43,12 +42,12 @@ class UserRepositoryTest extends AbstractIntegrationTest {
         user.setLastName("Иванова");
         user.setPhone("+7 (999) 765-43-21");
         user.setRole(Role.ADMIN);
-        entityManager.persistAndFlush(user);
+        userRepository.saveAndFlush(user); // сохраняем и сбрасываем в БД
 
         Optional<UsersDao> found = userRepository.findByEmail("find@example.com");
 
         assertThat(found).isPresent();
-        assertThat(found.get().getFirstName()).isEqualTo("Jane");
+        assertThat(found.get().getFirstName()).isEqualTo("Ирина");
     }
 
     @Test
@@ -60,7 +59,7 @@ class UserRepositoryTest extends AbstractIntegrationTest {
         user.setLastName("User");
         user.setPhone("+7 (999) 111-22-33");
         user.setRole(Role.USER);
-        entityManager.persistAndFlush(user);
+        userRepository.saveAndFlush(user);
 
         boolean exists = userRepository.existsByEmail("exists@example.com");
 
