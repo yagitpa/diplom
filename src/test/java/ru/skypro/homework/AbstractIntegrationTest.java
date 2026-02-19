@@ -25,11 +25,13 @@ public abstract class AbstractIntegrationTest {
         System.setProperty("docker.client.version", "1.44");
         // Отключаем Ryuk (рекомендуется для CI)
         System.setProperty("testcontainers.ryuk.disabled", "true");
+        Duration timeout = "true".equals(System.getenv("CI")) ? Duration.ofMinutes(3) : Duration.ofMinutes(1);
         postgres = new PostgreSQLContainer<>("postgres:15")
                 .withDatabaseName("testdb")
                 .withUsername("test")
                 .withPassword("test")
-                .withStartupTimeout(Duration.ofMinutes(1));
+                .withExposedPorts(5432)
+                .withStartupTimeout(timeout);
         postgres.start();
         Runtime.getRuntime().addShutdownHook(new Thread(postgres::stop));
     }
