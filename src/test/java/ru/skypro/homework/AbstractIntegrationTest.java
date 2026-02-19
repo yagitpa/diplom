@@ -21,6 +21,7 @@ public abstract class AbstractIntegrationTest {
     protected static final PostgreSQLContainer<?> postgres;
 
     static {
+        System.setProperty("docker.client.version", "1.44");
         postgres = new PostgreSQLContainer<>("postgres:15")
                 .withDatabaseName("testdb")
                 .withUsername("test")
@@ -37,6 +38,8 @@ public abstract class AbstractIntegrationTest {
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("app.image.avatar-dir", () -> "./target/test-avatars");
         registry.add("app.image.ad-dir", () -> "./target/test-ads-images");
+        registry.add("spring.datasource.hikari.connection-timeout", () -> "60000");
+        registry.add("spring.datasource.hikari.validation-timeout", () -> "60000");
     }
 
     @LocalServerPort
