@@ -1,6 +1,7 @@
 package ru.skypro.homework.controller.ad;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -90,7 +91,6 @@ class AdControllerIntegrationTest extends AbstractIntegrationTest {
         testAd.setImage("/ads-images/test.jpg");
         adRepository.save(testAd);
 
-        // Умный мок ImageService
         when(imageService.saveImage(any(MultipartFile.class), anyString(), anyString()))
                 .thenAnswer(invocation -> {
                     MultipartFile file = invocation.getArgument(0);
@@ -152,6 +152,20 @@ class AdControllerIntegrationTest extends AbstractIntegrationTest {
         // Оборачиваем JSON часть в HttpEntity с заголовком Content-Type
         HttpHeaders jsonHeaders = new HttpHeaders();
         jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = getMultiValueMapHttpEntity(propertiesPart, jsonHeaders, headers);
+
+        ResponseEntity<AdDto> response = withAuth(userEmail, userPassword)
+                .postForEntity(baseUrl() + "/ads", requestEntity, AdDto.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getTitle()).isEqualTo("New Ad");
+        assertThat(response.getBody().getAuthor()).isEqualTo(testUser.getId());
+
+        assertThat(adRepository.findByAuthorId(testUser.getId())).hasSize(2);
+    }
+
+    private static @NotNull HttpEntity<MultiValueMap<String, Object>> getMultiValueMapHttpEntity(ByteArrayResource propertiesPart, HttpHeaders jsonHeaders, HttpHeaders headers) {
         HttpEntity<ByteArrayResource> jsonEntity = new HttpEntity<>(propertiesPart, jsonHeaders);
 
         // Для изображения используем просто ByteArrayResource, без обёртки
@@ -167,16 +181,7 @@ class AdControllerIntegrationTest extends AbstractIntegrationTest {
         body.add("image", imagePart);        // простой ресурс
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-
-        ResponseEntity<AdDto> response = withAuth(userEmail, userPassword)
-                .postForEntity(baseUrl() + "/ads", requestEntity, AdDto.class);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getTitle()).isEqualTo("New Ad");
-        assertThat(response.getBody().getAuthor()).isEqualTo(testUser.getId());
-
-        assertThat(adRepository.findByAuthorId(testUser.getId())).hasSize(2);
+        return requestEntity;
     }
 
     @Test
