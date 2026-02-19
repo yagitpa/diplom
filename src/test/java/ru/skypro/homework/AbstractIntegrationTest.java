@@ -21,7 +21,10 @@ public abstract class AbstractIntegrationTest {
     protected static final PostgreSQLContainer<?> postgres;
 
     static {
+        // Принудительно устанавливаем версию Docker API
         System.setProperty("docker.client.version", "1.44");
+        // Отключаем Ryuk (рекомендуется для CI)
+        System.setProperty("testcontainers.ryuk.disabled", "true");
         postgres = new PostgreSQLContainer<>("postgres:15")
                 .withDatabaseName("testdb")
                 .withUsername("test")
