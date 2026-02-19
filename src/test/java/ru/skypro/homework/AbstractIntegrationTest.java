@@ -13,6 +13,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Duration;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public abstract class AbstractIntegrationTest {
@@ -23,7 +24,8 @@ public abstract class AbstractIntegrationTest {
         postgres = new PostgreSQLContainer<>("postgres:15")
                 .withDatabaseName("testdb")
                 .withUsername("test")
-                .withPassword("test");
+                .withPassword("test")
+                .withStartupTimeout(Duration.ofMinutes(1));
         postgres.start();
         Runtime.getRuntime().addShutdownHook(new Thread(postgres::stop));
     }
