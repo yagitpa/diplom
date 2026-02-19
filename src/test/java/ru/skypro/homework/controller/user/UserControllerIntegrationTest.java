@@ -62,7 +62,6 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
         testUser.setImage("/avatars/old.jpg");
         userRepository.save(testUser);
 
-        // Умный мок ImageService для аватаров
         when(imageService.saveImage(any(MultipartFile.class), anyString(), anyString()))
                 .thenAnswer(invocation -> {
                     MultipartFile file = invocation.getArgument(0);
