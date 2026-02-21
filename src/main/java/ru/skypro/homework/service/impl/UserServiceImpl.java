@@ -17,13 +17,6 @@ import ru.skypro.homework.repository.UserRepository;
 import ru.skypro.homework.service.CurrentUserService;
 import ru.skypro.homework.service.ImageService;
 import ru.skypro.homework.service.UserService;
-import ru.skypro.homework.util.ImageHelper;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -34,9 +27,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
-
     private final CurrentUserService currentUserService;
-
     private final ImageService imageService;
 
     @Value("${app.image.avatar-dir}")
