@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidCurrentPasswordException.class)
     public ResponseEntity<?> handleInvalidPassword(InvalidCurrentPasswordException e) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
     @ExceptionHandler(AdNotFoundException.class)

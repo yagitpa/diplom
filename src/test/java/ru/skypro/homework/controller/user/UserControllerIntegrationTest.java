@@ -152,7 +152,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void setPassword_WithWrongCurrent_ShouldReturnForbidden() {
+    void setPassword_WithWrongCurrent_ShouldReturnBadRequest() {
         NewPasswordDto passwordDto = new NewPasswordDto();
         passwordDto.setCurrentPassword("wrong123");
         passwordDto.setNewPassword("newPassword");
@@ -161,7 +161,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
         ResponseEntity<Void> response = withAuth(userEmail, userPassword)
                 .postForEntity(baseUrl() + "/users/set_password", request, Void.class);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
